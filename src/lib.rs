@@ -1,7 +1,7 @@
 #![cfg_attr(not(test), no_std)]
 //! A leaky, concurrent, lock-free, singly-linked list. Only supports prepending items, and will
 //! leak an allocation for each new element!
-//! 
+//!
 //! This type of list can be useful for setting up a chain of objects that only need to be
 //! initialized once and will live for the duration of the program.
 
@@ -30,12 +30,32 @@ unsafe impl<T: Sync> Sync for Node<T> {}
 
 impl<T> Node<T> {
     /// Returns a reference to the next node, or `None` if it this is the last node.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use leaklist::LeakList;
+    ///
+    /// let list: LeakList<u32> = LeakList::new();
+    /// let node = list.push_front(123);
+    /// assert!(node.next().is_none());
+    /// ```
     pub fn next(&self) -> Option<&'static Node<T>> {
         // SAFETY: all public functions only return a node once `next` is valid.
         unsafe { self.next.as_ref() }
     }
 
     /// Gets a reference to the value contained in this node.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use leaklist::LeakList;
+    ///
+    /// let list: LeakList<u32> = LeakList::new();
+    /// let node = list.push_front(123);
+    /// assert_eq!(*node.val(), 123);
+    /// ```
     pub fn val(&self) -> &T {
         &self.val
     }
@@ -67,6 +87,14 @@ impl<T: Debug> Debug for LeakList<T> {
 
 impl<T: Default> LeakList<T> {
     /// Creates a new, empty `LeakList<T>`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use leaklist::LeakList;
+    ///
+    /// let list: LeakList<u32> = LeakList::new();
+    /// ```
     pub fn new() -> Self {
         Self::default()
     }
@@ -74,6 +102,16 @@ impl<T: Default> LeakList<T> {
 
 impl<T> LeakList<T> {
     /// Pushes a new node to the head of the list. Returns a reference to the node.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use leaklist::LeakList;
+    ///
+    /// let list: LeakList<u32> = LeakList::new();
+    /// let node = list.push_front(123);
+    /// assert_eq!(*node.val(), 123);
+    /// ```
     pub fn push_front(&self, val: T) -> &'static Node<T> {
         let node_ptr = Box::into_raw(Box::new(Node {
             next: core::ptr::null(),
@@ -100,31 +138,76 @@ impl<T> LeakList<T> {
         }
     }
 
-    /// Returns the current head node of the list.
+    /// Returns the frontmost node of the list (ie. the most-recently added node).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use leaklist::LeakList;
+    ///
+    /// let list: LeakList<u32> = LeakList::new();
+    /// assert!(list.head().is_none());
+    /// list.push_front(123);
+    /// assert_eq!(list.head().map(|h| *h.val()), Some(123));
+    /// ```
     pub fn head(&self) -> Option<&'static Node<T>> {
         // SAFETY: the acquire fence ensures that the pointee and all following nodes are valid and
         // visible to this thread.
         unsafe { self.head.load(Ordering::Acquire).as_ref() }
     }
 
-    /// Returns the front node of the list (ie. the most-recently added node).
+    /// Returns the frontmost value of the list (ie. the most-recently added value).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use leaklist::LeakList;
+    ///
+    /// let list: LeakList<u32> = LeakList::new();
+    /// assert_eq!(list.front(), None);
+    /// list.push_front(123);
+    /// assert_eq!(list.front().copied(), Some(123));
+    /// ```
     pub fn front(&self) -> Option<&'static T> {
         self.head().map(|node| node.val())
     }
 
     /// Returns whether the list is currently empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use leaklist::LeakList;
+    ///
+    /// let list: LeakList<u32> = LeakList::new();
+    /// assert!(list.is_empty());
+    /// list.push_front(123);
+    /// assert!(!list.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.head().is_none()
     }
 
     /// Returns an iterator over the list from front to back, starting with the current head.
+    ///
+    /// /// # Examples
+    ///
+    /// ```
+    /// use leaklist::LeakList;
+    ///
+    /// let list: LeakList<u32> = LeakList::new();
+    /// list.push_front(456);
+    /// list.push_front(123);
+    /// let vec: Vec<u32> = list.iter().copied().collect();
+    /// assert_eq!(vec, [123, 456]);
+    /// ```
     pub fn iter(&self) -> Iter<T> {
         Iter { node: self.head() }
     }
 
-    // Note: future methods could include `pop_front()` and methods that let you more directly
-    // handle `Node<T>` instances. Other features like `len()` could be added as well, but this
-    // would make `Node<T>` more heavyweight.
+    // Note: future methods could include `pop_front()`, `extend()`, implementing `FromIterator`,
+    // and methods that let you more directly handle `Node<T>` instances. Other features like
+    // `len()` could be added as well, but this would make `Node<T>` more heavyweight.
 }
 
 /// An iterator over the items of a [`LeakList`].
