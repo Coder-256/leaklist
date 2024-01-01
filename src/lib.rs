@@ -190,7 +190,7 @@ impl<T> LeakList<T> {
 
     /// Returns an iterator over the list from front to back, starting with the current head.
     ///
-    /// /// # Examples
+    /// # Examples
     ///
     /// ```
     /// use leaklist::LeakList;
