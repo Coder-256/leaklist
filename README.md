@@ -1,8 +1,8 @@
 # leaklist
 
-![GitHub](https://img.shields.io/badge/github-Coder--256%2Fleaklist-foo?logo=github)
-![MIT OR Apache-2.0](https://img.shields.io/crates/l/leaklist)
-![docs.rs](https://img.shields.io/docsrs/leaklist)
+[![GitHub](https://img.shields.io/badge/github-Coder--256%2Fleaklist-4c1.svg?logo=github)](https://github.com/Coder-256/leaklist)
+[![License](https://img.shields.io/badge/license-MIT_OR_Apache--2.0-blue.svg)](https://github.com/Coder-256/leaklist#license)
+![docs.rs](https://docs.rs/leaklist/badge.svg)
 
 A leaky, concurrent, lock-free, singly-linked list. Only supports prepending
 items, and will leak an allocation for each new element.
