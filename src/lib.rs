@@ -71,7 +71,6 @@ impl<T: Debug> Debug for Node<T> {
 }
 
 /// A leaky, concurrent, lock-free, singly-linked list.
-#[derive(Default)]
 pub struct LeakList<T: 'static> {
     head: AtomicPtr<Node<T>>,
     phantom: PhantomData<&'static Node<T>>,
@@ -85,7 +84,16 @@ impl<T: Debug> Debug for LeakList<T> {
     }
 }
 
-impl<T: Default> LeakList<T> {
+impl<T> Default for LeakList<T> {
+    fn default() -> Self {
+        Self {
+            head: AtomicPtr::default(),
+            phantom: PhantomData,
+        }
+    }
+}
+
+impl<T> LeakList<T> {
     /// Creates a new, empty `LeakList<T>`.
     ///
     /// # Examples
@@ -98,9 +106,7 @@ impl<T: Default> LeakList<T> {
     pub fn new() -> Self {
         Self::default()
     }
-}
 
-impl<T> LeakList<T> {
     /// Pushes a new node to the head of the list. Returns a reference to the node.
     ///
     /// # Examples
