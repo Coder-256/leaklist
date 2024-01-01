@@ -54,9 +54,9 @@ impl<T> Node<T> {
     ///
     /// let list: LeakList<u32> = LeakList::new();
     /// let node = list.push_front(123);
-    /// assert_eq!(*node.val(), 123);
+    /// assert_eq!(*node.get(), 123);
     /// ```
-    pub fn val(&self) -> &T {
+    pub fn get(&self) -> &T {
         &self.val
     }
 }
@@ -64,7 +64,7 @@ impl<T> Node<T> {
 impl<T: Debug> Debug for Node<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Node")
-            .field("val", self.val())
+            .field("val", self.get())
             .field("next", &self.next())
             .finish()
     }
@@ -110,7 +110,7 @@ impl<T> LeakList<T> {
     ///
     /// let list: LeakList<u32> = LeakList::new();
     /// let node = list.push_front(123);
-    /// assert_eq!(*node.val(), 123);
+    /// assert_eq!(*node.get(), 123);
     /// ```
     pub fn push_front(&self, val: T) -> &'static Node<T> {
         let node_ptr = Box::into_raw(Box::new(Node {
@@ -148,7 +148,7 @@ impl<T> LeakList<T> {
     /// let list: LeakList<u32> = LeakList::new();
     /// assert!(list.head().is_none());
     /// list.push_front(123);
-    /// assert_eq!(list.head().map(|h| *h.val()), Some(123));
+    /// assert_eq!(list.head().map(|h| *h.get()), Some(123));
     /// ```
     pub fn head(&self) -> Option<&'static Node<T>> {
         // SAFETY: the acquire fence ensures that the pointee and all following nodes are valid and
@@ -169,7 +169,7 @@ impl<T> LeakList<T> {
     /// assert_eq!(list.front().copied(), Some(123));
     /// ```
     pub fn front(&self) -> Option<&'static T> {
-        self.head().map(|node| node.val())
+        self.head().map(|node| node.get())
     }
 
     /// Returns whether the list is currently empty.
@@ -222,7 +222,7 @@ impl<T> Iterator for Iter<T> {
     fn next(&mut self) -> Option<Self::Item> {
         let node = self.node?;
         self.node = node.next();
-        Some(node.val())
+        Some(node.get())
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
