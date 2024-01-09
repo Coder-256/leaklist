@@ -1,5 +1,5 @@
 #![cfg_attr(not(test), no_std)]
-//! A leaky, concurrent, lock-free, singly-linked list. Only supports prepending items, and will
+//! A simple, concurrent, lock-free, singly-linked list. Only supports prepending items, and will
 //! leak an allocation for each new element!
 //!
 //! This type of list can be useful for setting up a chain of objects that only need to be
@@ -71,7 +71,7 @@ impl<T: Debug> Debug for Node<T> {
     }
 }
 
-/// A leaky, concurrent, lock-free, singly-linked list.
+/// A simple, concurrent, lock-free, singly-linked list.
 pub struct LeakList<T> {
     head: AtomicPtr<Node<T>>,
     phantom: PhantomData<Box<Node<T>>>,

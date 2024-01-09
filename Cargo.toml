@@ -5,6 +5,6 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/Coder-256/leaklist"
 homepage = "https://github.com/Coder-256/leaklist"
-description = "A leaky, concurrent, lock-free, singly-linked list"
+description = "A simple, concurrent, lock-free, singly-linked list"
 keywords = ["lock-free", "linked", "list", "prepend", "concurrent"]
 categories = ["concurrency", "data-structures", "no-std", "memory-management"]
