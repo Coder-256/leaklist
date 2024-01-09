@@ -90,10 +90,7 @@ impl<T: Debug> Debug for LeakList<T> {
 
 impl<T> Default for LeakList<T> {
     fn default() -> Self {
-        Self {
-            head: AtomicPtr::default(),
-            phantom: PhantomData,
-        }
+        Self::new()
     }
 }
 
@@ -107,8 +104,11 @@ impl<T> LeakList<T> {
     ///
     /// let list: LeakList<u32> = LeakList::new();
     /// ```
-    pub fn new() -> Self {
-        Self::default()
+    pub const fn new() -> Self {
+        Self {
+            head: AtomicPtr::new(core::ptr::null_mut()),
+            phantom: PhantomData,
+        }
     }
 
     /// Pushes a new node to the head of the list. Returns a reference to the node.
